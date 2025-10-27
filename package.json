@@ -27,6 +27,7 @@
     "@babylonjs/inspector": "^8.31.0",
     "@babylonjs/loaders": "^8.31.0",
     "@babylonjs/materials": "^8.31.0",
-    "@babylonjs/post-processes": "^8.31.0"
+    "@babylonjs/post-processes": "^8.31.0",
+    "@kapetan/simple-pid": "^1.0.1"
   }
 }

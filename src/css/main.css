@@ -1,5 +1,6 @@
 html,
 body {
+  font-family: sans-serif;
   overflow: hidden;
   width: 100%;
   height: 100%;
@@ -24,3 +25,16 @@ body {
   color: #ca7497;
   font-size: 16px;
 }
+
+#pid-settings {
+  padding: 0.5em;
+  border-radius: 0.5em;
+  background: white;
+  width: fit-content;
+  position: absolute;
+}
+
+#pid-settings input {
+  display: block;
+}
+

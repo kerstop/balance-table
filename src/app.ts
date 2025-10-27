@@ -10,6 +10,13 @@ import HavokPhysics from "@babylonjs/havok";
 
 import MainScene from "./playground/main-scene";
 
+declare global {
+  interface Window {
+    app: App;
+    hk: HavokPlugin;
+  }
+}
+
 class App {
   public engine: Engine | WebGPUEngine;
   public scene: Scene;
@@ -41,7 +48,7 @@ class App {
     // Add physics. If not needed, you can annotate it to improve loading speed and environment performance.
     await this._setPhysics();
 
-    new MainScene(this.scene, this.canvas, this.engine);
+    new MainScene(this.scene, this.canvas);
 
     this._config();
     this._renderer();
@@ -60,7 +67,7 @@ class App {
     // Add physics. If not needed, you can annotate it to improve loading speed and environment performance.
     await this._setPhysics();
 
-    new MainScene(this.scene, this.canvas, this.engine);
+    new MainScene(this.scene, this.canvas);
 
     this._config();
     this._renderer();
@@ -70,6 +77,8 @@ class App {
     const gravity = new Vector3(0, -9.81, 0);
     const hk = await HavokPhysics();
     const plugin = new HavokPlugin(true, hk);
+    window.hk = plugin;
+    window.hk.setTimeStep(1 / 120);
     this.scene.enablePhysics(gravity, plugin);
   }
 
@@ -90,7 +99,10 @@ class App {
     // Works only in DEV mode to reduce the size of the PRODUCTION build
     // Comment IF statement to work in both modes
     if (import.meta.env.DEV) {
-      await Promise.all([import("@babylonjs/core/Debug/debugLayer"), import("@babylonjs/inspector")]);
+      await Promise.all([
+        import("@babylonjs/core/Debug/debugLayer"),
+        import("@babylonjs/inspector"),
+      ]);
 
       window.addEventListener("keydown", (ev) => {
         // Shift+Ctrl+Alt+I
@@ -134,4 +146,8 @@ class App {
   }
 }
 
-new App();
+window.app = new App();
+window.addEventListener(
+  "keydown",
+  (e) => e.key === "p" && window.app.scene.debugLayer.show(),
+);
