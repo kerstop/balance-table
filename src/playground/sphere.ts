@@ -3,6 +3,7 @@ import {
   MeshBuilder,
   PhysicsActivationControl,
   PhysicsBody,
+  PhysicsMaterialCombineMode,
   PhysicsMotionType,
   PhysicsPrestepType,
   PhysicsShapeSphere,
@@ -13,8 +14,9 @@ import {
 export class Sphere {
   mesh: Mesh;
   physicsBody: PhysicsBody;
-  spawn_position: Vector3 = new Vector3(0.2, 5, 0);
+  spawn_position: Vector3 = new Vector3(0, 2, 0);
   constructor(private scene: Scene) {
+    window.sphere = this;
     this.mesh = MeshBuilder.CreateSphere(
       "sphere",
       { diameter: 1, segments: 32 },
@@ -38,6 +40,10 @@ export class Sphere {
       this.physicsBody,
       PhysicsActivationControl.ALWAYS_ACTIVE,
     );
+    this.physicsBody.shape.material = {
+      restitution: 0,
+      restitutionCombine: PhysicsMaterialCombineMode.MINIMUM,
+    };
     this.physicsBody.setPrestepType(PhysicsPrestepType.TELEPORT);
     this.scene.onBeforePhysicsObservable.add(() => this.beforePhysics());
   }

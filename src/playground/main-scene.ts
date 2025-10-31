@@ -7,19 +7,21 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 // import { LoadAssetContainerAsync } from "@babylonjs/core/Loading/sceneLoader";
 import { Table } from "./table";
 import { Sphere } from "./sphere";
+import { MeshBuilder, UtilityLayerRenderer } from "@babylonjs/core";
 
 export default class MainScene {
   private camera: ArcRotateCamera;
+  private utilityLayer: UtilityLayerRenderer;
 
   constructor(
     private scene: Scene,
     private canvas: HTMLCanvasElement,
   ) {
+    this.utilityLayer = new UtilityLayerRenderer(scene);
     this._setCamera(scene);
     this._setLight(scene);
     //  this._setEnvironment(scene);
     this.loadComponents();
-    this.scene.debugLayer.show();
   }
 
   _setCamera(scene: Scene): void {
@@ -61,6 +63,6 @@ export default class MainScene {
   async loadComponents(): Promise<void> {
     // Load your files in order
     let sphere = new Sphere(this.scene);
-    new Table(this.scene, sphere);
+    new Table(this.scene, sphere, this.utilityLayer);
   }
 }

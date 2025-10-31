@@ -7,16 +7,17 @@ function clamp(value: number, limits: [number, number] | []): number {
   return value;
 }
 
-interface Options {
+export interface PIDOptions {
   sampleTime?: number;
   outputLimits?: [number, number] | [];
   autoMode?: boolean;
   proportionalOnMeasurement?: boolean;
+  inputHistory?: number;
   errorMap?: (x: number) => number;
 }
 
-export default class PID {
-  public sampleTime: number;
+export class PID {
+  public sampleTime: number | null;
   public proportionalOnMeasurement: boolean;
   public errorMap: (x: any) => any;
 
@@ -28,19 +29,21 @@ export default class PID {
   private _autoMode: boolean;
   private _lastTime: number;
   private _lastOutput: number;
-  private _lastInput: number;
+  private _lastInput: number[];
+  private _inputHistoryLength: number;
 
   constructor(
     public kp: number,
     public ki: number,
     public kd: number,
     public setpoint: number,
-    options?: Options,
+    options?: PIDOptions,
   ) {
-    this.sampleTime = options?.sampleTime ?? 10;
+    this.sampleTime = options?.sampleTime ?? null;
     this.outputLimits = options?.outputLimits ?? [];
     this.proportionalOnMeasurement =
       options?.proportionalOnMeasurement ?? false;
+    this._inputHistoryLength = options?.inputHistory ?? 1;
     this.errorMap = options?.errorMap ?? ((x) => x);
 
     this.proportional = 0;
@@ -50,7 +53,7 @@ export default class PID {
     this._autoMode = options?.autoMode ?? true;
     this._lastTime = Date.now();
     this._lastOutput = 0;
-    this._lastInput = 0;
+    this._lastInput = [];
 
     this.reset();
   }
@@ -73,7 +76,7 @@ export default class PID {
 
     dt = dt / 1000; // seconds
     const error = this.errorMap(this.setpoint - input);
-    const dInput = input - (this._lastInput ?? input);
+    const dInput = input - (this._lastInput.slice(-1)[0] ?? input);
 
     if (this.proportionalOnMeasurement) this.proportional -= this.kp * dInput;
     else this.proportional = this.kp * error;
@@ -81,7 +84,7 @@ export default class PID {
     this.integral += this.ki * error * dt;
     this.integral = clamp(this.integral, this.outputLimits);
 
-    this.derivative = (-this.kd * dInput) / dt;
+    this.derivative = (-this.kd * dInput) / (dt * this._inputHistoryLength);
 
     const output = clamp(
       this.proportional + this.integral + this.derivative,
@@ -90,7 +93,10 @@ export default class PID {
 
     this._lastTime = now;
     this._lastOutput = output;
-    this._lastInput = input;
+    this._lastInput = [
+      input,
+      ...this._lastInput.slice(0, this._inputHistoryLength),
+    ];
 
     return output;
   }
@@ -136,6 +142,6 @@ export default class PID {
 
     this._lastTime = Date.now();
     this._lastOutput = 0;
-    this._lastInput = 0;
+    this._lastInput = [];
   }
 }
